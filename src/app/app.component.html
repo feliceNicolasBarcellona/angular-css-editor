@@ -1,10 +1,10 @@
-  <form [formGroup]="cssForm" (ngSubmit)="onSubmit()">
-    <div *ngFor="let field of fields">
-           <label>{{field}}</label>
-    <input type="color" [formControlName]="field"/>
-    </div>
-    <button type="submit">Save</button>
-  </form>
+<form [formGroup]="cssForm" (ngSubmit)="onSubmit()">
+  <div *ngFor="let field of fields">
+    <label>{{ field }}</label>
+    <input type="color" [formControlName]="field">
+  </div>
+  <button type="submit">Save</button>
+</form>
+<button (click)="onAppendCss()">Append</button>
 
-
-
+<pre>{{model | json}}</pre>
