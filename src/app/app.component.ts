@@ -10,32 +10,50 @@ import { saveAs } from 'file-saver';
   standalone: true,
   imports: [CommonModule, RouterOutlet, ReactiveFormsModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
   cssContent: string | null = null;
-  cssForm: FormGroup;
+  cssForm!: FormGroup;
+
+  fields: string[] = [];
+
+  model: any = {};
 
   constructor(private http: HttpClient) {
-    this.cssForm = new FormGroup({
-      'primary-color': new FormControl('#000000'),
-      'secondary-color': new FormControl('#000000'),
-      'accent-color': new FormControl('#000000'),
-      'divider-color': new FormControl('#000000')
-    });
+  }
+
+  extractCssVariables() {
+    if (this.cssContent) {
+      const regex = /--([\w-]+):\s*([\w#]+)/g;
+      let match;
+      while ((match = regex.exec(this.cssContent)) !== null) {
+        const [, variable, value] = match;
+        this.model[variable.trim()] = value.trim();
+      }
+    }
   }
 
   ngOnInit() {
-    this.http.get('styles.css', {responseType: 'text'}).subscribe(data => {
+    this.http.get('styles.css', { responseType: 'text' }).subscribe((data) => {
       this.cssContent = data;
-      console.log(this.cssContent);
-      const cssVariables = this.cssContent.match(/--\w+:\s#[0-9a-fA-F]{6};/g);
-      cssVariables?.forEach(variable => {
-        const [name, value] = variable.split(':');
-        const controlName = name.trim().substring(2);
-        this.cssForm.controls[controlName].setValue(value.trim().substring(0, value.length - 1));
-      });
+      this.extractCssVariables();
+      this.buildForm()
     });
+  }
+
+  getFormControlsFields() {
+    const formGroupFields: any = {};
+    for (const field of Object.keys(this.model)) {
+      formGroupFields[field] = new FormControl(this.model[field]);
+      this.fields.push(field);
+    }
+    return formGroupFields;
+  }
+
+  buildForm() {
+    const formGroupFields = this.getFormControlsFields();
+    this.cssForm = new FormGroup(formGroupFields);
   }
 
   onSubmit() {
@@ -44,7 +62,7 @@ export class AppComponent {
       newCssContent += `  --${control}: ${this.cssForm.controls[control].value};\n`;
     }
     newCssContent += '}';
-  
+
     const blob = new Blob([newCssContent], { type: 'text/css;charset=utf-8' });
     saveAs(blob, 'styles.css');
   }

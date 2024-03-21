@@ -1,20 +1,10 @@
-
   <form [formGroup]="cssForm" (ngSubmit)="onSubmit()">
-    <label>
-      Primary Color:
-      <input type="color" formControlName="primary-color">
-    </label>
-    <label>
-      Secondary Color:
-      <input type="color" formControlName="secondary-color">
-    </label>
-    <label>
-      Accent Color:
-      <input type="color" formControlName="accent-color">
-    </label>
-    <label>
-      Divider Color:
-      <input type="color" formControlName="divider-color">
-    </label>
+    <div *ngFor="let field of fields">
+           <label>{{field}}</label>
+    <input type="color" [formControlName]="field"/>
+    </div>
     <button type="submit">Save</button>
   </form>
+
+
+
